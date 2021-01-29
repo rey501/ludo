@@ -1,6 +1,6 @@
 var MongoClient = require("mongodb").MongoClient;
 var URL =
-  "mongodb://desiludo:desiludo123@35.154.250.202:27017/LudoDB?authSource=admin&w=1&readPreference=primary&appname=MongoDB%20Compass&ssl=false";
+  "mongodb://ludo:ludo123@13.233.144.182:27017/LudoDB?authSource=admin&w=1&readPreference=primary&appname=MongoDB%20Compass&ssl=false";
 
 var state = {
   db: null,
