@@ -5,6 +5,7 @@ var database = "LudoDB";
 var serverip = "13.233.144.182";
 var port = "5000";
 
+
 exports.initdatabase = function (db) {
   database = db;
   (async () => {
@@ -37,7 +38,7 @@ exports.LogIn = function (socket, userInfo) {
         );
         var dataSocket = {
           connect: socket.id,
-          isLogin:1
+          isLogin: 1,
         };
         collection.updateOne(query, { $set: dataSocket }, function (err) {
           if (err) throw err;
@@ -210,10 +211,9 @@ exports.UpdateUserInfo = function (socket, userInfo) {
       commission: commission,
       roomPrice: roomAmount,
       numberOfPlayers: numPlayer,
-      createdAt:new Date(),
-      updatedAt:new Date(),
-      __v:0
-
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      __v: 0,
     };
     commissionCollection.insertOne(queryCommsion, function (err) {
       if (!err) {
@@ -222,21 +222,23 @@ exports.UpdateUserInfo = function (socket, userInfo) {
     });
   }
 
-  console.log("BOT ID||||||||||",userInfo.userID+"===="+userInfo['userID']);
-    if(userInfo.botId!=undefined){
-      let collectionBots = database.collection("bots");
-      var queryBotsUpdate = {
-        _id: userInfo.botId,
-      };
-      collectionBots.updateOne(
-        queryBotsUpdate,
-        { $set: { is_available: "true" } },
-        function (err) {
-          if (err) throw err;
-        }
-      );
-    }
-
+  console.log(
+    "BOT ID||||||||||",
+    userInfo.userID + "====" + userInfo["userID"]
+  );
+  if (userInfo.botId != undefined) {
+    let collectionBots = database.collection("bots");
+    var queryBotsUpdate = {
+      _id: userInfo.botId,
+    };
+    collectionBots.updateOne(
+      queryBotsUpdate,
+      { $set: { is_available: "true" } },
+      function (err) {
+        if (err) throw err;
+      }
+    );
+  }
 
   var data = {
     points: parseInt(userInfo.points),
@@ -308,6 +310,57 @@ exports.TournamentList = function (socket, data) {
         }
       }
       socket.emit("GET_TOURNAMENTS_RESULT", mydata);
+    }
+  });
+};
+exports.WidrawalRequest = function (socket, data) {
+  var collection = database.collection("Withdraws");
+  var query = {
+    userid: data.userid,
+    username: data.username,
+    amount: data.amount,
+    phonnumber: data.phonumber,
+    accountnum: data.accountnumber,
+    ifsc: data.ifsc,
+    type: data.withdrwalType,
+    date: new Date(),
+    status: "pending",
+  };
+  collection.insertOne(query, function (err) {
+    if (!err) {
+      console.log("WidrawalRequest added");
+      mydata = {
+        result: "success",
+        userid: data.userid,
+        amount: data.amount,
+      };
+      var collectionUser = database.collection("User_Data");
+      console.log("||||||||||||||||", data.userid);
+      var queryUser = {
+        username: data.username,
+      };
+      var points = 0;
+      collectionUser.findOne(queryUser, function (err, result) {
+        if (err) console.log(err);
+        else {
+          console.log("||||||||||||||||", result);
+          points = parseInt(result.points) - parseInt(data.amount);
+          var dataUser = {
+            points: points,
+          };
+
+          collectionUser.updateOne(
+            queryUser,
+            { $set: dataUser },
+            function (err) {
+              if (err) throw err;
+              else console.log("user coin updated.......");
+            }
+          );
+        }
+      });
+
+      socket.emit("GET_WITHDRAWAL_RESULT", mydata);
     }
   });
 };
